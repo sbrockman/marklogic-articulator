@@ -84,36 +84,24 @@ function cleanHTMLTagsFromString( inString ) {
 }
 
 /**
- * Function to pass into array sort to sort items by date.
- * @param  {Object} a First item to compare
- * @param  {Object} b Second item to compare
- * @return {Integer}  0 if items are equal. 1 if a < b. -1 if a > b.
+ * Function to sort an array of objects based on a property.
+ * @param {Array} array The array to sort
+ * @param  {String} propertyName the property name to sorty by
+ * @param  {String} order The order to sort (default ascending).  Either: ascending or descending
  */
-function dateSort(a, b) {
-	if (a.hasOwnProperty('trainingUnits')) {
+function propertyDateSort(array, propertyName, order) {
+	function compare(a, b) {
 		try {
-			if (new Date(a.completionDate) < new Date(b.completionDate)) {
-				return 1;
-			} else if (new Date(a.completionDate) > new Date(b.completionDate)) {
-				return -1;
+			if (new Date(a[propertyName]) < new Date(b[propertyName])) {
+			return (order == "descending") ? 1 : -1;
+			} else if (new Date(a[propertyName]) > new Date(b[propertyName])) {
+			return (order == "descending") ? -1 : 1;
 			}
 		} catch (e) {
-
 		}
 		return 0;
-	} else if (a.hasOwnProperty('effectiveDate')) {
-		try {
-			if (new Date(a.effectiveDate) < new Date(b.effectiveDate)) {
-				return 1;
-			} else if (new Date(a.effectiveDate) > new Date(b.effectiveDate)) {
-				return -1;
-			}
-		} catch (e) {
-
-		}
-		return 0;
-	}
-	return 0;
+	};
+	array.sort(compare);
 }
 
 /**
@@ -344,7 +332,7 @@ function getDocAsObject(uri) {
 exports.buildJsonDocument = buildJsonDocument;
 exports.sanitizeField = sanitizeField;
 exports.toTitleCase = toTitleCase;
-exports.dateSort = dateSort;
+exports.propertyDateSort = propertyDateSort;
 exports.getStagingData = getStagingData;
 exports.isoDate = isoDate;
 exports.cleanHTMLTagsFromArray = cleanHTMLTagsFromArray;
