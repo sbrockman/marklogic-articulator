@@ -14,6 +14,7 @@ The sample JSON document that might be generated from the [Configuration](#Sampl
 	studentId: "12345",
 	lastName: "Jones",
 	firstName: "Bob",
+	createDate: "2013-04-18T07:00:00.000Z",
 	addresses: [{
 		number: "7777",
 		address: "123 Main Street",
@@ -43,12 +44,15 @@ The example below shows a simple configuration that was used to create the above
 This configuration assumes RowBot has also pulled a "STUDENT_ID" for all tables as well.  Because studentId is only specified in the configuration once, it only appears in the JSON object once.
 
 ```
-{
+var util = require('/lib/rowbotUtil.sjs');
+
+const jsonConfiguration = {
 	'students-collection': {
 		fields: {
 			studentId: "STUDENT_ID",
 			lastName: "LAST_NAME",
 			firstName: "FIRST_NAME",
+			createDate: {dbname: "CREATE_DATE", function: util.isoDate},
 			addresses: [],
 			email: [],
 			phone: []
@@ -86,7 +90,7 @@ This configuration assumes RowBot has also pulled a "STUDENT_ID" for all tables 
 		},
 		primaryKey: [{field: 'PHONE', order: 'ascending'}]
 	}
-}
+};
 ```
 
 Each configuration key, details how a RowBot query maps to the above conceptual object. 
@@ -105,6 +109,11 @@ for (var doc of cts.search(q)) {
 	// ** DO SOMETHING WITH studentJson
 }
 ```
+
+### Default and Custom Transformations
+Notice the *createDate* field, with that field we invoke a special handler function to convert the field into an ISO date.  If the value for a property is an object, the Articulator engine will look for a *function* property, and invoke that as a function pointer, passing in the ```(value, key)``` into that function for conversion.  Some handler functions are included for convenience.  
+
+The default transformation is to trim any whitespace from a value.  If the value = '' or is undefined, the property will not appear in the transformed object.
 
 ### Joins
 * join - a one-to-one join across two relation tables.  This will merge fields from query1 with fields from query2.

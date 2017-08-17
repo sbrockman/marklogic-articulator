@@ -1,12 +1,9 @@
 /**
- * Utility functions
+ * RowBot Utility Library for converting JSON objects to functions
  *
- * @author Steven Brockman steven.brockman@marklogic.com
  * @author Brad Mann brad.mann@marklogic.com
+ * @author Steven Brockman steven.brockman@marklogic.com
  */
-
-// Add fields here that need to be converted to date.  Note: isoDate function assumes ZULU time
-const dateFields = ['effectiveDate'];
 
 const LIB = 'rowbotUtil: ';
 
@@ -23,15 +20,16 @@ function buildJsonDocument(dataMap, dataSource, docObject) {
 }
 
 /**
- * Trim whitespace from around field, and conver to null if empty string
- * @param  {String} fieldName The name of the field to sanitize
+ * Default function to trim whitespace from around field, and conver to null if empty string
  * @param  {String} text      The text to sanitize
  * @return {String}           The sanitized text, or null if the sanitized string is empty.
  */
-function sanitizeField(fieldName, text) {
-	var trimmed = text.trim();
-	trimmed = (trimmed == '') ? undefined : trimmed;
-	trimmed = (trimmed && dateFields.indexOf(fieldName) != -1) ? isoDate(trimmed) : trimmed;
+function trimField(text) {
+	var trimmed;
+	if (text) {
+		trimmed = text.trim();
+		trimmed = (trimmed == '') ? undefined : trimmed;
+	}
 	return trimmed;
 }
 
@@ -279,13 +277,25 @@ function getStagingData(dataMap, dataSource, dataQuery) {
 		}
 
 		var dataObject = {};
+		var fieldFunction;
 		if (dataDef) {
-			Object.keys(dataDef.fields).forEach(function(field) {
+			Object.keys(dataDef.fields).forEach(function(key) {
+				var fieldName;
+				if (typeof dataDef.fields[key] == "object") {
+					fieldName = dataDef.fields[key].dbname;
+					fieldFunction = dataDef.fields[key].function;
+				} else {
+					fieldName = dataDef.fields[key];
+					fieldFunction = undefined;
+				}
 				// if the field is an array (may be outerJoin)
-				if (Array.isArray(curObject[field]) || dataDef.fields[field] == "__LOOKUP__") {
-					dataObject[field] = curObject[field];
-				} else if (curObject[dataDef.fields[field]]) {
-					dataObject[field] = sanitizeField(field, curObject[dataDef.fields[field]]);
+				if (Array.isArray(curObject[key]) || fieldName == "__LOOKUP__") {
+					dataObject[key] = curObject[key];
+				// else if supplied custom function - use that to convert data
+				} else if (fieldFunction) {
+					dataObject[key] = fieldFunction(curObject[fieldName], key);
+				} else if (curObject[fieldName]) {
+					dataObject[key] = trimField(curObject[fieldName]);
 				}
 			});
 		} else {
@@ -306,9 +316,10 @@ function returnErrorToClient(statusCode, statusMsg, body)
 /**
  * Convert a SQL date string into a ML date string
  * @param  {String} dateString The date string to convert
+ * @param  {String} key The field being converted (not used)
  * @return {String}            The converted date string
  */
-function isoDate(dateString) {
+function isoDate(dateString, key) {
 	if (typeof dateString === 'string') {
 		if (!isNaN(Date.parse(dateString))) {
 			return (new Date(Date.parse(dateString + "Z"))).toISOString();
@@ -318,7 +329,7 @@ function isoDate(dateString) {
 			return dateString.split(' ').join('T') + 'Z';
 		}
 	}
-	return null;
+	return undefined;
 }
 
 function objectsAreEqual(obj1, obj2) {
@@ -329,8 +340,8 @@ function getDocAsObject(uri) {
 	return (cts.exists(cts.documentQuery(uri))) ? cts.doc(uri).toObject() : null;
 }
 
+exports.trimField = trimField;
 exports.buildJsonDocument = buildJsonDocument;
-exports.sanitizeField = sanitizeField;
 exports.toTitleCase = toTitleCase;
 exports.propertyDateSort = propertyDateSort;
 exports.getStagingData = getStagingData;
