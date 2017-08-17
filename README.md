@@ -7,7 +7,7 @@ This project is built to work with the marklogic-rowbot project.  See: [marklogi
 The transformation is achieved using a JSON configuration object that defines how the relational tables map to a JSON structure.  The configuration allows for 1-1 joins (join) and 1 - many joins (outerJoin) as well as nested (recursive) structures.
 
 ### Sample Output
-The sample JSON document that might be generated from the [Configuration](#Sample-Configuration) below.
+The sample JSON document that might be generated from the [Configuration](#sample-configuration) below.
 
 ```
 {
@@ -98,7 +98,7 @@ Each configuration key, details how a RowBot query maps to the above conceptual 
 ## Usage
 
 ### Invoking the Transform
-To construct a [JSON Document](#Sample-Output) using a supplied, you need to pass in an object that corresponds to the "driving" table. 
+To construct a [JSON Document](#sample-output) using a supplied, you need to pass in an object that corresponds to the "driving" table. 
 ```
 var q = cts.collectionQuery("students-collection");
 for (var doc of cts.search(q)) {
