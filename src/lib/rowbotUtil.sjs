@@ -234,7 +234,7 @@ function indexLookup(dataMap, indexDef, curObject) {
 	var query = cts.andQuery([
 			cts.directoryQuery(dataMap.stagingDirectory, 'infinity'),
 			cts.collectionQuery(indexDef.collection),
-			cts.jsonPropertyValueQuery(indexDef.lookupProperty, curObject[indexDef.localProperty])
+			cts.jsonPropertyValueQuery(indexDef.lookupProperty, curObject[indexDef.localProperty], 'exact')
 		]);
 	return fn.head(cts.elementValues(fn.QName('', indexDef.lookupValue), null, null, query));
 }

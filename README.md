@@ -64,14 +64,18 @@ const jsonConfiguration = {
 		},
 		primaryKey: {field: 'STUDENT_ID', order: 'ascending'}
 	},
-	'address-collection': {
+'address-collection': {
 		fields: {
 			number: "NUM",
 			address: "ADDRESS",
 			addressType: "ADDRESS_TYPE",
 			state: "STATE",
 			city: "CITY",
-			zip: "ZIP"
+			zip: "ZIP",
+			country: "__LOOKUP__",
+		},
+		'indexLookup': {
+			'country':{collection: 'countrycode-collection', localProperty: 'C_CODE', lookupProperty: 'C_CODE', value: 'C_DESCR'}
 		},
 		primaryKey: [{field: 'STUDENT_ID', order: 'ascending'},{field: 'ADDRESS', order: 'ascending'}]
 	},
@@ -98,7 +102,7 @@ Each configuration key, details how a RowBot query maps to the above conceptual 
 ## Usage
 
 ### Invoking the Transform
-To construct a [JSON Document](#sample-output) using a supplied, you need to pass in an object that corresponds to the "driving" table. 
+To construct a [JSON Document](#sample-output) using a supplied [Configuration](#sample-configuration), you need to pass in an object that corresponds to the "driving" table. 
 ```
 var q = cts.collectionQuery("students-collection");
 for (var doc of cts.search(q)) {
@@ -116,6 +120,7 @@ Notice the *createDate* field, with that field we invoke a special handler funct
 The default transformation is to trim any whitespace from a value.  If the value = '' or is undefined, the property will not appear in the transformed object.
 
 ### Joins
+To join data across 
 * join - a one-to-one join across two relation tables.  This will merge fields from query1 with fields from query2.
 	* Supports composite/multi-value key
 	* Must supply a primaryKey and foreignKey values.
@@ -123,6 +128,11 @@ The default transformation is to trim any whitespace from a value.  If the value
 * outerJoin - a one-to-many merge across two relational queries.
 	* Supports composite/multi-value key
 	* Must supply a primaryKey and foreignKey values, AS WELL AS a target field (type must be an Array)
+
+#### Lookup Table Support
+
+* indexLookup - allows to pull values from a lookup table (ex: Country Codes.   "DEU" = "Germany")
+	* Fields with a value of ```"__LOOKUP__"``` will reference the 'indexLookup' definitions, based on property value, then a join to the lookup collection will be performed, only the first value will be returned if more than one entry matches the join.
 
 ### Tips
 Typically a RowBot query will correspond to one dataset/collection inserted into MarkLogic, however, RowBot allows for complex queries to be defined in its configuration files, so complex joins may also be handled there as well, provided the data returned constructs one conceptual object per returned row.
