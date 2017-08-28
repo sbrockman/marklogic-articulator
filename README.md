@@ -21,7 +21,8 @@ The sample JSON document that might be generated from the [Configuration](#sampl
 		addressType: "HOME",
 		state: "WA",
 		city: "WallahWallah",
-		zip: "22222"
+		zip: "22222",
+		country: "United States"
 	},{
 		number: "1111",
 		address: "456 Main Street",
