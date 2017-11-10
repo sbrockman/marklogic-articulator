@@ -58,11 +58,11 @@ const jsonConfiguration = {
 			email: [],
 			phone: []
 		},
-		outerJoin: {
-			'address-collection': {field: 'addresses', joinKeys: {primaryKey: 'STUDENT_ID', foreignKey: 'STUDENT_ID'}},
-			'email-collection': {field: 'email', joinKeys: {primaryKey: 'STUDENT_ID', foreignKey: 'STUDENT_ID'}},
-			'phone-collection': {field: 'phone', joinKeys: {primaryKey: 'STUDENT_ID', foreignKey: 'STUDENT_ID'}}
-		},
+		outerJoin: [
+			{'collection': 'address-collection', field: 'addresses', joinKeys: [{primaryKey: 'STUDENT_ID', foreignKey: 'STUDENT_ID'}]},
+			{'collection': 'email-collection', field: 'email', joinKeys: [{primaryKey: 'STUDENT_ID', foreignKey: 'STUDENT_ID'}]},
+			{'collection': 'phone-collection', field: 'phone', joinKeys: [{primaryKey: 'STUDENT_ID', foreignKey: 'STUDENT_ID'}]}
+		],
 		primaryKey: {field: 'STUDENT_ID', order: 'ascending'}
 	},
 'address-collection': {
@@ -73,7 +73,7 @@ const jsonConfiguration = {
 			state: "STATE",
 			city: "CITY",
 			zip: "ZIP",
-			country: "__LOOKUP__",
+			country: "__LOOKUP__"
 		},
 		'indexLookup': {
 			'country':{collection: 'countrycode-collection', localProperty: 'C_CODE', lookupProperty: 'C_CODE', value: 'C_DESCR'}
@@ -128,7 +128,12 @@ To join data across
 	* Be sure not to allow conflicting column names across the two, as values may be lost when merging.
 * outerJoin - a one-to-many merge across two relational queries.
 	* Supports composite/multi-value key
-	* Must supply a primaryKey and foreignKey values, AS WELL AS a target field (type must be an Array)
+	* Defined as an array of objects where each object property defines:
+		* collection - the rowbot collection
+		* field - property name that defines an Array within the current object to place joined objects/rows
+		* A joinKeys - defines an ordered array of primaryKey and foreignKey pairs (used to form complex key joins)
+			* primaryKey - the DB Column name from the current table
+			* foreignKey - values, AS WELL AS a target field (type must be an Array)
 
 #### Lookup Table Support
 

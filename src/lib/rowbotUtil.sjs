@@ -153,15 +153,15 @@ function getJoinQuery(dataMap, fromDataSource, joinDataSource, docObject) {
  * 
  * @return [Array]                   The set of objects in an Array.
  */
-function leftOuterJoinStagingData(dataMap, fromDataSource, joinDataSource, docObject) {
-	var joinDataDef = dataMap[joinDataSource];
+function leftOuterJoinStagingData(dataMap, fromDataSource, joinDef, docObject) {
+	var joinDataDef = dataMap[joinDef.collection];
 	var q = cts.andQuery([
 		cts.directoryQuery(dataMap.stagingDirectory, 'infinity'),
-		cts.collectionQuery(joinDataSource),
-		getOuterJoinQuery(dataMap, fromDataSource, joinDataSource, docObject)
+		cts.collectionQuery(joinDef.collection),
+		getOuterJoinQuery(dataMap, fromDataSource, joinDef, docObject)
 	]);
 
-	var subobjects = getStagingData(dataMap, joinDataSource, q);
+	var subobjects = getStagingData(dataMap, joinDef.collection, q);
 
 	return subobjects;
 }
@@ -171,14 +171,13 @@ function leftOuterJoinStagingData(dataMap, fromDataSource, joinDataSource, docOb
  * 
  * @param  {Object} dataMap          The dataMap definition file for the object
  * @param  {String} fromDataSource   The string representing the collection for the current query/dataset being processed
- * @param  {String} joinDataSource   The string representing the collection for the dataset to join
+ * @param  {String} joinDef          The object definition containing the collection for the dataset to join
  * @param  {docObject} docObject     The current object being processed (used for comparing key values)
  * 
  * @return [Array]                   The cts query
  */
-function getOuterJoinQuery(dataMap, fromDataSource, joinDataSource, docObject) {
+function getOuterJoinQuery(dataMap, fromDataSource, joinDef, docObject) {
 	var fromDataDef = dataMap[fromDataSource];
-	var joinDef = fromDataDef.outerJoin[joinDataSource];
 	var outerJoinQuery = [];
 	if (joinDef) {
 		if (Array.isArray(joinDef.joinKeys)) {
@@ -189,7 +188,7 @@ function getOuterJoinQuery(dataMap, fromDataSource, joinDataSource, docObject) {
 			outerJoinQuery.push(cts.jsonPropertyValueQuery(joinDef.joinKeys.foreignKey, docObject[joinDef.joinKeys.primaryKey]));
 		}
 	} else {
-		returnErrorToClient(400, 'Bad Request', 'Missing primaryKey definition in dataMap for:' + joinDataSource);
+		returnErrorToClient(400, 'Bad Request', 'Missing primaryKey definition in dataMap for:' + joinDef.collection);
 	}
 	return outerJoinQuery;
 }
@@ -262,8 +261,8 @@ function getStagingData(dataMap, dataSource, dataQuery) {
 			});
 		}
 		if (dataDef.hasOwnProperty('outerJoin')) {
-			Object.keys(dataDef.outerJoin).forEach(function(collection) {
-				curObject[dataDef.outerJoin[collection].field] = leftOuterJoinStagingData(dataMap, dataSource, collection, curObject);
+			dataDef.outerJoin.forEach(function(joinObj) {
+				curObject[joinObj.field] = leftOuterJoinStagingData(dataMap, dataSource, joinObj, curObject);
 			});
 		}
 
