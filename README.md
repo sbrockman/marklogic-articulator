@@ -15,6 +15,7 @@ The sample JSON document that might be generated from the [Configuration](#sampl
 	lastName: "Jones",
 	firstName: "Bob",
 	createDate: "2013-04-18T07:00:00.000Z",
+	isEligible: true,
 	addresses: [{
 		number: "7777",
 		address: "123 Main Street",
@@ -45,7 +46,8 @@ The example below shows a simple configuration that was used to create the above
 This configuration assumes RowBot has also pulled a "STUDENT_ID" for all tables as well.  Because studentId is only specified in the configuration once, it only appears in the JSON object once.
 
 ```
-var util = require('/lib/rowbotUtil.sjs');
+var art = require('/lib/rowbotUtil.sjs');
+var util = require('/lib/util.sjs');
 
 const jsonConfiguration = {
 	'students-collection': {
@@ -54,6 +56,7 @@ const jsonConfiguration = {
 			lastName: "LAST_NAME",
 			firstName: "FIRST_NAME",
 			createDate: {dbname: "CREATE_DATE", function: util.isoDate},
+			isEligible: {dbname: "IS_ELIG", function: util.convertBoolean},
 			addresses: [],
 			email: [],
 			phone: []
@@ -110,7 +113,7 @@ for (var doc of cts.search(q)) {
 	// This document corresponds to one row in the Driving table.
 	var studentObject = doc.toObject();
 	// Pass in: the JSON Configuration, Driving Table collection, Driving Table Object
-	var studentJson = util.buildJsonDocument(jsonConfiguration, 'students-collection', studentObject);
+	var studentJson = art.buildJsonDocument(jsonConfiguration, 'students-collection', studentObject);
 	// ** DO SOMETHING WITH studentJson
 }
 ```
